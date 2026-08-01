@@ -1,0 +1,104 @@
+pipeline {
+    agent any
+    
+    environment {
+        AWS_REGION = 'ap-south-1'
+        ECR_REGISTRY = '495599738828.dkr.ecr.ap-south-1.amazonaws.com'
+        ECR_REPOSITORY = 'venkatesan004/cicd-node-app'
+        ECS_CLUSTER = 'node-app-cluster-prod'
+        ECS_SERVICE = 'node-app-backend-prod-service-nbrky4pb'
+        ECS_TASK_DEFINITION = 'node-app-backend-prod'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        EMAIL_TO = "venkatesangunaraj@gmail.com"
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image..."
+                    sh """
+                        docker build -t ${ECR_REPOSITORY}:${IMAGE_TAG} .
+                        docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                        docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
+                    """
+                }
+            }
+        }
+        
+        stage('Push to ECR') {
+            steps {
+                script {
+                    withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
+                        echo "Logging in to ECR..."
+                        sh """
+                            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                        """
+                        
+                        echo "Pushing image to ECR..."
+                        sh """
+                            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
+                        """
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy to ECS') {
+            steps {
+                script {
+                    withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
+                        echo "Updating ECS service..."
+                        sh """
+                            aws ecs update-service \
+                                --cluster ${ECS_CLUSTER} \
+                                --service ${ECS_SERVICE} \
+                                --force-new-deployment
+                        """
+                    }
+                }
+            }
+        }
+        
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    withAWS(credentials: 'aws-credentials', region: "${AWS_REGION}") {
+                        echo "Waiting for service to stabilize..."
+                        sh """
+                            aws ecs wait services-stable \
+                                --cluster ${ECS_CLUSTER} \
+                                --services ${ECS_SERVICE}
+                        """
+                        echo "Deployment successful!"
+                    }
+                }
+            }
+        }
+    }
+    
+  post {
+    success {
+      mail(
+        to: "${EMAIL_TO}",
+        subject: "SUCCESS (${env.GIT_BRANCH}): ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        body: "Pipeline succeeded.\nBranch: ${env.GIT_BRANCH}\nBuild: #${env.BUILD_NUMBER}\nURL: ${env.BUILD_URL}"
+      )
+    }
+
+    failure {
+      mail(
+        to: "${EMAIL_TO}",
+        subject: "FAILED (${env.GIT_BRANCH}): ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        body: "Pipeline failed.\nBranch: ${env.GIT_BRANCH}\nBuild: #${env.BUILD_NUMBER}\nURL: ${env.BUILD_URL}"
+      )
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "project-1-freestyle",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "pm2": "^7.0.3"
+  }
+}

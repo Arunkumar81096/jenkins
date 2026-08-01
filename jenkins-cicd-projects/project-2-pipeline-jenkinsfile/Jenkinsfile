@@ -1,0 +1,75 @@
+pipeline {
+  agent any
+
+  environment {
+    PROJECT_DIR = "project-2-pipeline-jenkinsfile"
+    PM2_APP_NAME = "project-2-app"
+    EMAIL_TO = "venkatesangunaraj@gmail.com"
+  }
+
+  stages {
+    stage('Preparation') {
+      steps {
+        sh '''
+          echo "Build started!"
+          echo "Branch: ${GIT_BRANCH}"
+          echo "Build Number: ${BUILD_NUMBER}"
+          ls -la
+        '''
+      }
+    }
+
+    stage('Install Dependencies') {
+      steps {
+        dir("${PROJECT_DIR}") {
+          sh 'npm install'
+        }
+      }
+    }
+
+    stage('Run Tests') {
+      steps {
+        dir("${PROJECT_DIR}") {
+          sh 'npm test'
+        }
+      }
+    }
+
+    stage('Deploy with PM2') {
+      when {
+        expression { currentBuild.currentResult == 'SUCCESS' }
+      }
+      steps {
+        dir("${PROJECT_DIR}") {
+          sh '''
+            export PATH=$PATH:/usr/local/bin
+            echo "Deploying app using PM2..."
+
+            if pm2 list | grep -q "${PM2_APP_NAME}"; then
+              echo "App exists -> Restarting..."
+              pm2 restart "${PM2_APP_NAME}"
+            else
+              echo "App not found -> Starting..."
+              pm2 start index.js --name "${PM2_APP_NAME}"
+            fi
+
+            pm2 save
+          '''
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      script {
+        def buildStatus = currentBuild.currentResult ?: 'UNKNOWN'
+        mail(
+          to: "${EMAIL_TO}",
+          subject: "Jenkins Build ${buildStatus}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+          body: """Build Notification\n\nJob: ${env.JOB_NAME}\nBuild: #${env.BUILD_NUMBER}\nBranch: ${env.GIT_BRANCH}\nStatus: ${buildStatus}\nURL: ${env.BUILD_URL}"""
+        )
+      }
+    }
+  }
+}

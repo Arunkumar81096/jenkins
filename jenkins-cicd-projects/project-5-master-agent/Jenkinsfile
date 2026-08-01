@@ -1,0 +1,100 @@
+pipeline {
+  agent {
+    label 'docker-agent'
+  }
+  
+  environment {
+    PROJECT_DIR = "project-5-master-agent"
+    IMAGE_NAME = "venkatesan004/project-5-master-agent"
+    IMAGE_TAG = "${BUILD_NUMBER}"
+    CONTAINER_NAME = "project-5-master-agent"
+    EMAIL_TO = "venkatesangunaraj@gmail.com"
+    DOCKER_CREDENTIALS = "dockerhub-credentials"
+  }
+
+  stages {
+
+    stage("Build") {
+      steps {
+        dir("${PROJECT_DIR}") {
+          sh '''
+            echo "Build started!"
+            echo "Branch: ${GIT_BRANCH}"
+            echo "Build Number: ${BUILD_NUMBER}"
+            npm install
+          '''
+        }
+      }
+    }
+
+    stage("Test") {
+      steps {
+        dir("${PROJECT_DIR}") {
+          sh "npm test"
+        }
+      }
+    }
+
+    // 🔹 Only for master
+    stage("Docker Build") {
+      steps {
+        dir("${PROJECT_DIR}") {
+          sh """
+            docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+          """
+        }
+      }
+    }
+
+    // 🔥 PUSH STAGE (ONLY MASTER)
+    stage("Push to Docker Hub") {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: "${DOCKER_CREDENTIALS}",
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+            docker push ${IMAGE_NAME}:${IMAGE_TAG}
+            docker push ${IMAGE_NAME}:latest
+          '''
+        }
+      }
+    }
+
+    // 🔹 Deploy only on master
+    stage("Docker Deploy (Production)") {
+      steps {
+        sh '''
+          docker rm -f ${CONTAINER_NAME} || true
+
+          docker run -d \
+            --name ${CONTAINER_NAME} \
+            -p 3004:3004 \
+            ${IMAGE_NAME}:${IMAGE_TAG}
+        '''
+      }
+    }
+  }
+
+  post {
+    success {
+      mail(
+        to: "${EMAIL_TO}",
+        subject: "SUCCESS (${env.GIT_BRANCH}): ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        body: "Pipeline succeeded.\nBranch: ${env.GIT_BRANCH}\nBuild: #${env.BUILD_NUMBER}\nURL: ${env.BUILD_URL}"
+      )
+    }
+
+    failure {
+      mail(
+        to: "${EMAIL_TO}",
+        subject: "FAILED (${env.GIT_BRANCH}): ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        body: "Pipeline failed.\nBranch: ${env.GIT_BRANCH}\nBuild: #${env.BUILD_NUMBER}\nURL: ${env.BUILD_URL}"
+      )
+    }
+  }
+}
