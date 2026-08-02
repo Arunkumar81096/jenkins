@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    PROJECT_DIR = "'jenkins-cicd-projects/project-2-pipeline-jenkinsfile'"
+    PROJECT_DIR = "jenkins-cicd-projects/project-2-pipeline-jenkinsfile"
     PM2_APP_NAME = "project-2-app"
     EMAIL_TO = "rajapandiyan.arunkumar@gmail.com"
   }
