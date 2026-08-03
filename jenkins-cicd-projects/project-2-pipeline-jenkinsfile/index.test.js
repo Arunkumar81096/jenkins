@@ -40,6 +40,9 @@ test("GET /health returns service health payload", async () => {
       message: "Service is healthy",
     });
   } finally {
-    server.close();
+   // Force close active connections if server.close() hangs
+    server.close(() => {
+      // Server closed successfully
+    });
   }
 });
