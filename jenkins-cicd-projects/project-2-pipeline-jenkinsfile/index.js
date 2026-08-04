@@ -21,7 +21,7 @@ app.get("/health", (req, res) => {
 
 // FIXED: Remove the require.main wrapper and bind to 0.0.0.0
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Project 2 API running on port ${PORT}`);
+  console.log(`Project 2 API runs on port ${PORT}`);
 });
 
 module.exports = app;
