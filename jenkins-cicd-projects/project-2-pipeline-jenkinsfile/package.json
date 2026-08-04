@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node --test"
+    "test": "node --test && node -e 'process.exit(0)'"
   },
   "dependencies": {
     "express": "^5.2.1"
