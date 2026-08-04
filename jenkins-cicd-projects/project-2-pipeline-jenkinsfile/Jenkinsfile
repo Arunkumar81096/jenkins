@@ -61,12 +61,15 @@ pipeline {
   }
 
       post {
-        failure {
-            emailext (
-                to: 'rajapandiyan.arunkumar@gmail.com',
-                subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "Build failed at ${env.BUILD_URL}"
-            )
-        }
+    always {
+      script {
+        def buildStatus = currentBuild.currentResult ?: 'UNKNOWN'
+        mail(
+          to: "${EMAIL_TO}",
+          subject: "Jenkins Build ${buildStatus}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+          body: """Build Notification\n\nJob: ${env.JOB_NAME}\nBuild: #${env.BUILD_NUMBER}\nBranch: ${env.GIT_BRANCH}\nStatus: ${buildStatus}\nURL: ${env.BUILD_URL}"""
+        )
       }
+    }
+  }
 }
