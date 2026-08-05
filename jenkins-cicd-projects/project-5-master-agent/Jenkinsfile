@@ -4,11 +4,11 @@ pipeline {
   }
   
   environment {
-    PROJECT_DIR = "project-5-master-agent"
-    IMAGE_NAME = "venkatesan004/project-5-master-agent"
+    PROJECT_DIR = "jenkins-cicd-projects/project-5-master-agent"
+    IMAGE_NAME = "ak81096/project-5-master-agent"
     IMAGE_TAG = "${BUILD_NUMBER}"
     CONTAINER_NAME = "project-5-master-agent"
-    EMAIL_TO = "venkatesangunaraj@gmail.com"
+    EMAIL_TO = "rajapandiyan.arunkumar@gmail.com"
     DOCKER_CREDENTIALS = "dockerhub-credentials"
   }
 
@@ -73,7 +73,7 @@ pipeline {
 
           docker run -d \
             --name ${CONTAINER_NAME} \
-            -p 3004:3004 \
+            -p 3007:3007 \
             ${IMAGE_NAME}:${IMAGE_TAG}
         '''
       }
