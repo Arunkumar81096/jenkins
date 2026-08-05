@@ -74,7 +74,7 @@ pipeline {
             # Run new container
             docker run -d \
               --name ${CONTAINER_NAME} \
-              -p 3005:3004 \
+              -p 3005:3003 \
               ${IMAGE_NAME}:${IMAGE_TAG}
         '''
       }
