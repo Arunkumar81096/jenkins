@@ -7,7 +7,7 @@ app.get("/", (req, res) => {
   res.status(200).json({
     status: "ok",
     project: "project-4-multibranch-pipeline",
-    message: "Welcome to Project 4 APIs",
+    message: "Welcome to Project 4 API",
   });
 });
 
