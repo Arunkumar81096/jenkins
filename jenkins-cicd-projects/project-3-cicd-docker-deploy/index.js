@@ -7,7 +7,7 @@ app.get("/", (req, res) => {
   res.status(200).json({
     status: "ok",
     project: "project-3-cicd-docker-deploy",
-    message: "Welcome to Project 3 API",
+    message: "Welcome to Project 3 APIs",
   });
 });
 
