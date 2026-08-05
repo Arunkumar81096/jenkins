@@ -80,7 +80,7 @@ pipeline {
 
           docker run -d \
             --name ${CONTAINER_NAME} \
-            -p 3006:3006 \
+            -p 3006:3004 \
             ${IMAGE_NAME}:${IMAGE_TAG}
         '''
       }
