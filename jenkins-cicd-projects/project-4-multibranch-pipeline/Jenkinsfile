@@ -36,7 +36,7 @@ pipeline {
     // 🔹 Only for master
     stage("Docker Build") {
       when {
-        branch 'master'
+        branch 'main'
       }
       steps {
         dir("${PROJECT_DIR}") {
@@ -51,7 +51,7 @@ pipeline {
     // 🔥 PUSH STAGE (ONLY MASTER)
     stage("Push to Docker Hub") {
       when {
-        branch 'master'
+        branch 'main'
       }
       steps {
         withCredentials([usernamePassword(
@@ -72,7 +72,7 @@ pipeline {
     // 🔹 Deploy only on master
     stage("Docker Deploy (Production)") {
       when {
-        branch 'master'
+        branch 'main'
       }
       steps {
         sh '''
