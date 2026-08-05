@@ -2,11 +2,11 @@ pipeline {
   agent any
 
   environment {
-    PROJECT_DIR = "project-4-multibranch-pipeline"
-    IMAGE_NAME = "venkatesan004/project-4-multibranch-pipeline"
+    PROJECT_DIR = "jenkins-cicd-projects/project-4-multibranch-pipeline"
+    IMAGE_NAME = "ak81096/project-4-multibranch-pipeline"
     IMAGE_TAG = "${BUILD_NUMBER}"
     CONTAINER_NAME = "project-4-multibranch-pipeline"
-    EMAIL_TO = "venkatesangunaraj@gmail.com"
+    EMAIL_TO = "rajapandiyan.arunkumar@gmail.com"
     DOCKER_CREDENTIALS = "dockerhub-credentials"
   }
 
