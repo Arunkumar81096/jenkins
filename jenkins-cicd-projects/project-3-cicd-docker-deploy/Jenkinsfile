@@ -2,11 +2,11 @@ pipeline {
   agent any
 
   environment {
-    PROJECT_DIR = "project-3-cicd-docker-deploy"
-    IMAGE_NAME = "venkatesan004/project-3-pipeline-docker-new"
+    PROJECT_DIR = "jenkins-cicd-projects/project-3-cicd-docker-deploy"
+    IMAGE_NAME = "ak81096/project-3-pipeline-docker-new"
     IMAGE_TAG = "${BUILD_NUMBER}"
     CONTAINER_NAME = "project-3-pipeline-docker-new"
-    EMAIL_TO = "venkatesangunaraj@gmail.com"
+    EMAIL_TO = "rajapandiyan.arunkumar@gmail.com"
     DOCKER_CREDENTIALS = "dockerhub-credentials"
   }
 
